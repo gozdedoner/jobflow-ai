@@ -13,14 +13,28 @@ const app = express();
 // 🔐 Middlewares
 app.use(express.json());
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://jobflow-ai-sigma.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // frontend 
-    credentials: true, // 🔥 COOKIE 
+    origin: (origin, callback) => {
+      // Postman / server-to-server için
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
   })
 );
 
-app.use(cookieParser()); // 🔥 REFRESH TOKEN 
+app.use(cookieParser());
 
 // 🔁 Routes
 app.use("/api/auth", authRoutes);
